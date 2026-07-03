@@ -8,7 +8,7 @@ import path from "path";
 import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
-import { initializeApp as initializeClientApp } from "firebase/app";
+import { initializeApp as initializeClientApp, getApp, getApps } from "firebase/app";
 import { 
   getFirestore as getClientFirestore, 
   collection, 
@@ -228,14 +228,14 @@ try {
     firebaseConfig = JSON.parse(fs.readFileSync(configPath, "utf-8"));
   }
 
-  const clientApp = initializeClientApp({
+  const clientApp = getApps().length === 0 ? initializeClientApp({
     apiKey: firebaseConfig.apiKey || "AIzaSyBS5TYRFru6eJmfzxJG-FrdapO_rPyRXn4",
     authDomain: firebaseConfig.authDomain || "viral-clip-pipeline.firebaseapp.com",
     projectId: firebaseConfig.projectId || "viral-clip-pipeline",
     storageBucket: firebaseConfig.storageBucket || "viral-clip-pipeline.firebasestorage.app",
     messagingSenderId: firebaseConfig.messagingSenderId || "200456172335",
     appId: firebaseConfig.appId || "1:200456172335:web:9a9023104a4ac447e127da"
-  });
+  }) : getApp();
 
   const databaseId = firebaseConfig.firestoreDatabaseId || "ai-studio-a5b302e6-80ab-4f01-a26e-c49e60273031";
   db = new ClientFirestoreWrapper(clientApp, databaseId);
@@ -256,8 +256,13 @@ const COGNEE_API_KEY = process.env.COGNEE_API_KEY || "b706bb0ac1611398e9b5862f7d
 
 // Dynamically import pdf-parse safely using createRequire for ESM compatibility
 import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
+let pdfParse: any = null;
+try {
+  const require = createRequire(import.meta.url);
+  pdfParse = require("pdf-parse");
+} catch (err) {
+  console.warn("[Server] pdf-parse could not be loaded during module startup (handled gracefully):", err);
+}
 
 export const appPromise = (async () => {
   const app = express();
@@ -420,11 +425,16 @@ export const appPromise = (async () => {
       
       if (fileType === 'pdf') {
         try {
-          const parsed = await pdfParse(buffer);
+          let parser = pdfParse;
+          if (!parser) {
+            const requireModule = createRequire(import.meta.url);
+            parser = requireModule("pdf-parse");
+          }
+          const parsed = await parser(buffer);
           textContent = parsed.text;
         } catch (err: any) {
           console.error("PDF Parse error, fallback to visual mock parsing:", err);
-          textContent = buffer.toString('utf-8');
+          textContent = buffer.toString('utf-8').replace(/[^\x20-\x7E\r\n\t]/g, '');
         }
       } else if (fileType === 'csv') {
         const rawText = buffer.toString('utf-8');
@@ -898,7 +908,7 @@ export const appPromise = (async () => {
   });
 
   // Vite Integration for Client SPA Applet
-  if (process.env.NODE_ENV !== "production") {
+  if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
