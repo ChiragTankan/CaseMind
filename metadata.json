@@ -1,0 +1,6 @@
+{
+  "name": "CaseMind AI",
+  "description": "AI-powered Investigation Agent with Cognee Persistent Memory and Graph Visualization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+body {
+  background-color: #09090b;
+  color: #cbd5e1;
+  font-family: var(--font-sans);
+}
+
+/* Custom scrollbars for professional terminal/investigator logs */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0c0c0e;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* Custom pulse animations for suspicious relationships */
+@keyframes graph-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0px rgba(244, 63, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(244, 63, 94, 0);
+  }
+}
+
+.animate-pulse-red {
+  animation: graph-pulse 2s infinite;
+}
+
+/* Override React Flow styling for cohesive dark theme */
+.react-flow__renderer {
+  background-color: #0c0c0e !important;
+}
+
+.react-flow__node {
+  border-radius: 8px !important;
+  color: #cbd5e1 !important;
+  font-family: var(--font-mono) !important;
+}
+
+.react-flow__edge-path {
+  stroke-width: 2px !important;
+}
+
+/* Make sure Controls panel is completely visible with high-contrast, premium dark background */
+.react-flow__controls {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background-color: #1a1a1e !important;
+  padding: 2px !important;
+}
+
+.react-flow__controls-button {
+  background-color: #1a1a1e !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #f1f5f9 !important;
+  width: 28px !important;
+  height: 28px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.2s ease !important;
+}
+
+.react-flow__controls-button:last-child {
+  border-bottom: none !important;
+}
+
+.react-flow__controls-button:hover {
+  background-color: #2e2e35 !important;
+}
+
+.react-flow__controls-button svg {
+  fill: #cbd5e1 !important;
+  stroke: #cbd5e1 !important;
+  width: 13px !important;
+  height: 13px !important;
+}
+
+/* Also ensure MiniMap stands out beautifully */
+.react-flow__minimap {
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  background-color: #121214 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Beautiful Rich text render engine for markdown-body inside agent blocks */
+.markdown-body p {
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+.markdown-body p:last-child {
+  margin-bottom: 0;
+}
+.markdown-body ul {
+  list-style-type: disc !important;
+  padding-left: 1.25rem !important;
+  margin-bottom: 0.75rem !important;
+}
+.markdown-body ul li {
+  margin-bottom: 0.25rem;
+}
+.markdown-body ol {
+  list-style-type: decimal !important;
+  padding-left: 1.25rem !important;
+  margin-bottom: 0.75rem !important;
+}
+.markdown-body ol li {
+  margin-bottom: 0.25rem;
+}
+.markdown-body li {
+  line-height: 1.5;
+}
+.markdown-body strong {
+  font-weight: 700 !important;
+  color: #ffffff !important;
+}
+.markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4 {
+  font-family: var(--font-mono) !important;
+  font-weight: 600 !important;
+  color: #ffffff !important;
+  margin-top: 1.25rem !important;
+  margin-bottom: 0.5rem !important;
+}
+.markdown-body h1 { font-size: 1.25rem !important; }
+.markdown-body h2 { font-size: 1.15rem !important; }
+.markdown-body h3 { font-size: 1.05rem !important; }
+.markdown-body h4 { font-size: 0.95rem !important; }
+.markdown-body blockquote {
+  border-left: 3px solid #6366f1 !important;
+  padding-left: 0.75rem !important;
+  color: #94a3b8 !important;
+  font-style: italic !important;
+  margin: 0.75rem 0 !important;
+}
+.markdown-body code {
+  font-family: var(--font-mono) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: #a5b4fc !important;
+  font-size: 0.8rem !important;
+  padding: 0.125rem 0.25rem !important;
+  border-radius: 0.25rem !important;
+}
+

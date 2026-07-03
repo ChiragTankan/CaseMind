@@ -1,0 +1,102 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny catch-all safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Standard Cognee schema validation helpers
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+    
+    function incoming() { 
+      return request.resource.data; 
+    }
+    
+    function existing() { 
+      return resource.data; 
+    }
+
+    // Validation blueprints for each core collections
+    function isValidCase(data) {
+      return data.keys().hasAll(['name', 'description', 'userId', 'createdAt'])
+        && data.keys().size() == 4
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && data.description is string && data.description.size() <= 5000
+        && data.userId is string && data.userId.size() > 0 && data.userId.size() <= 128
+        && data.createdAt is string && data.createdAt.size() <= 60;
+    }
+
+    function isValidDocument(data) {
+      return data.keys().hasAll(['caseId', 'name', 'type', 'size', 'content', 'createdAt'])
+        && (data.keys().size() == 6 || data.keys().size() == 7) // optional cognified field
+        && data.caseId is string && data.caseId.size() > 0 && data.caseId.size() <= 128
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 500
+        && data.type is string && data.type.size() > 0 && data.type.size() <= 50
+        && data.size is int
+        && data.content is string
+        && data.createdAt is string && data.createdAt.size() <= 60;
+    }
+
+    function isValidEntity(data) {
+      return data.keys().hasAll(['caseId', 'documentId', 'name', 'type', 'metadata', 'createdAt'])
+        && (data.keys().size() == 6 || data.keys().size() == 7) // optional lastUpdatedByDocId field
+        && data.caseId is string && data.caseId.size() > 0 && data.caseId.size() <= 128
+        && data.documentId is string && data.documentId.size() > 0 && data.documentId.size() <= 128
+        && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+        && data.type is string && (data.type == 'person' || data.type == 'company' || data.type == 'account' || data.type == 'location' || data.type == 'date' || data.type == 'transaction')
+        && data.metadata is map
+        && data.createdAt is string && data.createdAt.size() <= 60;
+    }
+
+    function isValidRelationship(data) {
+      return data.keys().hasAll(['caseId', 'documentId', 'source', 'target', 'type', 'description', 'createdAt'])
+        && data.keys().size() == 7
+        && data.caseId is string && data.caseId.size() > 0 && data.caseId.size() <= 128
+        && data.documentId is string && data.documentId.size() > 0 && data.documentId.size() <= 128
+        && data.source is string && data.source.size() > 0 && data.source.size() <= 200
+        && data.target is string && data.target.size() > 0 && data.target.size() <= 200
+        && data.type is string && (data.type == 'works_at' || data.type == 'owns' || data.type == 'transferred_to' || data.type == 'associated_with' || data.type == 'met_with' || data.type == 'located_at')
+        && data.description is string && data.description.size() <= 5000
+        && data.createdAt is string && data.createdAt.size() <= 60;
+    }
+
+    function isValidReport(data) {
+      return data.keys().hasAll(['caseId', 'title', 'content', 'createdAt'])
+        && data.keys().size() == 4
+        && data.caseId is string && data.caseId.size() > 0 && data.caseId.size() <= 128
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 500
+        && data.content is map
+        && data.createdAt is string && data.createdAt.size() <= 60;
+    }
+
+    // Match blocks with validation enforcements
+    match /cases/{caseId} {
+      allow get, delete, list: if true;
+      allow create, update: if isValidCase(incoming());
+    }
+
+    match /documents/{docId} {
+      allow get, delete, list: if true;
+      allow create, update: if isValidDocument(incoming());
+    }
+
+    match /entities/{entId} {
+      allow get, delete, list: if true;
+      allow create, update: if isValidEntity(incoming());
+    }
+
+    match /relationships/{relId} {
+      allow get, delete, list: if true;
+      allow create, update: if isValidRelationship(incoming());
+    }
+
+    match /reports/{repId} {
+      allow get, delete, list: if true;
+      allow create, update: if isValidReport(incoming());
+    }
+  }
+}
