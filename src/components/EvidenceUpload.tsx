@@ -50,6 +50,12 @@ export default function EvidenceUpload({ caseId, documents, onUploadSuccess }: E
       return;
     }
 
+    const MAX_FILE_SIZE = 3.5 * 1024 * 1024; // 3.5 MB limit
+    if (file.size > MAX_FILE_SIZE) {
+      setErrorMsg(`File "${file.name}" is too large (${(file.size / (1024 * 1024)).toFixed(2)} MB). Vercel serverless functions restrict requests to 4.5 MB (including Base64 encoding overhead). Please split your document or upload a smaller file (maximum 3.5 MB).`);
+      return;
+    }
+
     setUploading(true);
     setErrorMsg(null);
 
@@ -70,6 +76,15 @@ export default function EvidenceUpload({ caseId, documents, onUploadSuccess }: E
               size: file.size
             })
           });
+
+          if (response.status === 413) {
+            throw new Error(`File is too large for the Vercel serverless function payload limit. Please upload a smaller file under 3.5 MB.`);
+          }
+
+          if (!response.ok) {
+            const errorText = await response.text().catch(() => "");
+            throw new Error(`Server returned error (${response.status}): ${errorText || response.statusText}`);
+          }
 
           const result = await response.json();
           if (!result.success) {
@@ -189,7 +204,7 @@ export default function EvidenceUpload({ caseId, documents, onUploadSuccess }: E
               {uploading ? 'Parsing and uploading...' : 'Drag and drop your file here, or click to browse'}
             </p>
             <p className="text-xs text-slate-500 mt-1.5 font-mono">
-              Supports PDF, TXT, CSV, DOCX (Max size 40MB)
+              Supports PDF, TXT, CSV, DOCX (Max size 3.5MB)
             </p>
           </div>
 
