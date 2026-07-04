@@ -248,12 +248,34 @@ try {
   console.error("Firebase Client SDK initialization error:", error);
 }
 
-// Initialize Gemini Client
-const apiKey = process.env.GEMINI_API_KEY;
-if (!apiKey) {
-  console.warn("WARNING: GEMINI_API_KEY environment variable is not defined!");
+// Lazy Initialize Gemini Client on Demand
+function getGeminiClient(): GoogleGenAI {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key || key.trim() === "" || key === "MY_GEMINI_API_KEY") {
+    throw new Error(
+      "GEMINI_API_KEY environment variable is missing or unset. " +
+      "If you are running in AI Studio, ensure it is configured in Settings > Secrets. " +
+      "If you are running on Vercel, please navigate to Project Settings -> Environment Variables in your Vercel Dashboard, add GEMINI_API_KEY, and then redeploy."
+    );
+  }
+  return new GoogleGenAI({ 
+    apiKey: key,
+    httpOptions: {
+      headers: {
+        'User-Agent': 'aistudio-build',
+      }
+    }
+  });
 }
-const ai = new GoogleGenAI({ apiKey: apiKey || "" });
+
+const ai = {
+  get models() {
+    return getGeminiClient().models;
+  },
+  get chats() {
+    return getGeminiClient().chats;
+  }
+};
 
 const COGNEE_BASE_URL = (process.env.COGNEE_BASE_URL || process.env.COGNEE_SERVICE_URL || process.env.COGNEE_API_URL || "https://tenant-233d89dc-0e45-41ec-a943-ed9dd4482dab.aws.cognee.ai").replace(/\/$/, "");
 const COGNEE_API_KEY = process.env.COGNEE_API_KEY || "b706bb0ac1611398e9b5862f7de7c3304df6008bb53bfb2b0a6b4bc7ce543836";
